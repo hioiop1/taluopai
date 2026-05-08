@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>塔罗灵感 · 单文件完整版</title>
+  <style>
+    :root{
+      --bg:#110c0e;--bg2:#21161a;--panel:rgba(42,29,31,.86);--line:rgba(212,174,116,.18);
+      --text:#f3e6d8;--muted:rgba(243,230,216,.74);--soft:rgba(243,230,216,.54);
+      --gold:#d7b27b;--gold2:#f0d4a2;--shadow:0 22px 60px rgba(0,0,0,.34)
+    }
+    *{box-sizing:border-box} html,body{margin:0;min-height:100%}
+    body{
+      font-family:Georgia,"Times New Roman","PingFang SC","Microsoft YaHei",serif;color:var(--text);
+      background:
+        radial-gradient(circle at top,rgba(212,174,116,.18),transparent 24%),
+        radial-gradient(circle at 20% 12%,rgba(120,82,46,.18),transparent 30%),
+        linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%)
+    }
+    body:before{
+      content:"";position:fixed;inset:0;pointer-events:none;
+      background-image:
+        radial-gradient(circle at 50% 18%,rgba(255,227,178,.08),transparent 16%),
+        linear-gradient(rgba(212,174,116,.04) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(212,174,116,.04) 1px,transparent 1px);
+      background-size:auto,26px 26px,26px 26px;
+      mask-image:linear-gradient(180deg,#000 18%,transparent 100%)
+    }
+    .app{width:min(1080px,calc(100% - 24px));margin:0 auto;padding:20px 0 36px}
+    .box{background:var(--panel);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);backdrop-filter:blur(12px)}
+    .top{display:grid;grid-template-columns:1.02fr .98fr;gap:20px}
+    .hero,.ctrl,.result,.ritual{padding:24px}
+    .hero{position:relative;overflow:hidden}
+    .hero:after{content:"";position:absolute;inset:-36% 12% auto;height:220px;background:radial-gradient(circle,rgba(240,212,162,.14),transparent 68%);pointer-events:none}
+    .eyebrow,.label,.reading-title,.minor{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#f0d4a2c9}
+    h1,h2,h3,p,pre{margin:0}.hero h1{margin-top:10px;font-size:clamp(38px,5vw,62px);letter-spacing:.08em;color:var(--gold2);text-shadow:0 0 18px rgba(242,213,166,.12)}
+    .hero p,.ritual p,.meaning p{line-height:1.8;color:var(--muted)}
+    .chips,.actions,.modes,.tags,.result-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .chips{margin-top:18px}.chip,.tag{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,248,236,.06);font-size:12px}
+    .field+.field,.actions,.summary,.result-actions,.ritual p+p{margin-top:18px}.label{display:block;margin-bottom:10px}
+    textarea{width:100%;min-height:104px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:rgba(255,248,236,.08);color:var(--text);font:inherit;resize:vertical;outline:none}
+    textarea::placeholder{color:rgba(243,230,216,.44)}
+    button{appearance:none;border:1px solid var(--line);background:rgba(255,248,236,.06);color:var(--text);padding:12px 16px;border-radius:15px;font:inherit;cursor:pointer;transition:transform .18s ease,background .18s ease}
+    button:hover{transform:translateY(-1px)}
+    button.active,.primary{background:linear-gradient(180deg,var(--gold) 0%,#9e703c 100%);color:#1b1212}
+    .head{display:flex;justify-content:space-between;align-items:center;gap:12px}.result h2,.ritual h3{margin-top:8px;color:var(--gold2)}
+    .question{margin-top:16px;padding:12px 14px;border-radius:16px;background:rgba(255,248,236,.08);border:1px solid var(--line);color:var(--muted)}
+    .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+    .card{padding:14px;border-radius:22px;border:1px solid var(--line);background:rgba(255,248,236,.05)}
+    .stage{height:282px;position:relative}
+    .stage.shuffling{animation:shufflePulse .68s ease infinite alternate}
+    .card-back,.card-front{position:absolute;inset:0;backface-visibility:hidden;transition:transform .85s cubic-bezier(.2,.8,.2,1),opacity .38s ease}
+    .card-back{
+      display:flex;align-items:center;justify-content:center;flex-direction:column;border-radius:20px;overflow:hidden;
+      background:radial-gradient(circle at 50% 18%,rgba(255,223,166,.3),transparent 30%),linear-gradient(180deg,#513123 0%,#221518 100%);
+      border:1px solid rgba(255,233,195,.24)
+    }
+    .card-back:after{content:"";position:absolute;inset:12px;border-radius:16px;border:1px solid rgba(255,236,203,.28)}
+    .card-front{transform:rotateY(180deg)}
+    .stage.revealed .card-back{transform:rotateY(180deg);opacity:0}
+    .stage.revealed .card-front{transform:rotateY(0)}
+    .back-stars,.back-title,.back-subtitle{position:relative;z-index:1}
+    .back-stars{letter-spacing:.28em;opacity:.76}
+    .back-title{margin-top:16px;font-size:28px;letter-spacing:.24em}
+    .back-subtitle{margin-top:12px;font-size:12px;letter-spacing:.18em;text-transform:uppercase}
+    .stage.shuffling .card-back{transform:rotate(-3deg) scale(.985)}
+    .face{
+      height:100%;border-radius:20px;padding:18px 14px;position:relative;overflow:hidden;text-align:center;color:#fff9ef;
+      background:radial-gradient(circle at top,rgba(255,214,153,.3),transparent 35%),linear-gradient(180deg,#6f4726 0%,#382022 100%)
+    }
+    .face:before{content:"";position:absolute;inset:24px 42px auto;height:56px;background:radial-gradient(circle,rgba(255,227,178,.18),transparent 72%)}
+    .face:after{content:"";position:absolute;inset:10px;border:1px solid rgba(255,236,203,.35);border-radius:14px}
+    .face>*{position:relative;z-index:1}.face.reversed{transform:rotate(180deg)}
+    .front-ornament,.glyph{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+    .arcana{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#f0d4a2db}
+    .glyph{top:66px;left:50%;width:104px;height:104px;inset:auto;transform:translateX(-50%);opacity:.95;filter:drop-shadow(0 0 14px rgba(242,213,166,.14))}
+    .name{margin-top:132px;font-size:25px;font-weight:700;line-height:1.12}
+    .name-en{margin-top:6px;font-size:13px;opacity:.82}.minor{margin-top:8px;color:#f3e6d89c}
+    .reading{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+    .reading.hidden{display:none}
+    .reading-title{display:block;margin-bottom:10px}
+    .meaning-list{display:grid;gap:10px;margin-top:14px}
+    .meaning{padding:12px 14px;border-radius:15px;background:rgba(255,248,236,.06);border:1px solid rgba(212,174,116,.1)}
+    .meaning strong{display:inline-block;margin-bottom:4px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#f0d4a2ba}
+    .summary{padding:18px;border-radius:20px;background:rgba(255,248,236,.06);border:1px solid var(--line)}
+    pre{margin-top:14px;padding:16px;border-radius:16px;background:rgba(255,248,236,.08);border:1px solid var(--line);white-space:pre-wrap;word-break:break-word;line-height:1.8;color:var(--text);font:inherit}
+    .action-message{margin-top:12px;color:#f0d4a2c8;font-size:14px}.ritual{margin-top:22px}
+    @keyframes shufflePulse{from{transform:translateY(0) rotate(-1deg)}to{transform:translateY(-4px) rotate(1deg)}}
+    @media (max-width:920px){.top,.cards{grid-template-columns:1fr}.app{width:min(100% - 16px,1080px)}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="top">
+      <section class="box hero">
+        <span class="eyebrow">Single File Tarot</span>
+        <h1>塔罗灵感</h1>
+        <p> 当问题尚未成形，牌面会先替你照见轮廓。把注意力放回心里，抽出此刻真正靠近你的那一道讯息。</p>
+        <!-- <div class="chips">
+          <span class="chip">完整牌库 78 张</span>
+          <span class="chip">一张启示 / 过去 现在 将至</span>
+          <span class="chip">单文件可运行</span>
+        </div> -->
+      </section>
+      <section class="box ctrl">
+        <div class="field">
+          <span class="label">将念头放上桌面</span>
+          <textarea id="question" placeholder="例如：今日运势，今日会遇到什么困难？"></textarea>
+        </div>
+        <div class="field">
+          <span class="label">选择展开方式</span>
+          <div class="modes">
+            <button class="mode active" data-mode="single">一张启示</button>
+            <button class="mode" data-mode="triple">过去 / 现在 / 将至</button>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="draw" class="primary">唤起牌面</button>
+          <button id="reset">重新归零</button>
+          <button id="copy">收下这段话</button>
+          <button id="posterSvg">保存 SVG 海报</button>
+          <button id="posterPng">保存 PNG 海报</button>
+        </div>
+        <div id="msg" class="action-message"></div>
+      </section>
+    </div>
+
+    <section class="box result">
+      <div class="head">
+        <div><span class="eyebrow">Reading</span><h2>显现的牌面</h2></div>
+        <span id="count" class="chip">1 张牌</span>
+      </div>
+      <div id="questionBox" class="question">此刻，什么最值得被看见？</div>
+      <div id="cards" class="cards"></div>
+      <div class="summary">
+        <span class="eyebrow">Oracle Copy</span>
+        <h3>留给此刻的话</h3>
+        <pre id="summary"></pre>
+      </div>
+      <div class="result-actions"><button id="save" class="primary">保存这个文件</button></div>
+    </section>
+
+    <section class="box ritual">
+      <h3>阅读仪式</h3>
+      <p>先留意第一张让你停住呼吸的牌，再慢慢回看整组讯息。很多时候，真正先开口的，是你的直觉。</p>
+      <p>若答案没有立刻落下，也不必催促。让牌意在心里停留一会儿，往往比急着解释它更接近真实。</p>
+    </section>
+  </div>
+
+  <script>
+    const labels = { single: ["此刻指引"], triple: ["过去", "现在", "将至"] };
+
+    const majorCards = [
+      ["愚者","The Fool",["开始","自由","冒险"],["新的阶段已经打开。","关系里适合真诚表达与重新认识彼此。","适合尝试新的方向，但要保留风险意识。","大胆开始，同时守住底线。"]],
+      ["魔术师","The Magician",["行动","资源","创造"],["资源与时机都在逐渐到位。","你有机会主动推动关系进展。","适合提案、谈判、启动个人项目。","把想法收束成具体动作。"]],
+      ["女祭司","The High Priestess",["直觉","洞察","沉静"],["答案已经在内心成形。","先观察真实情绪与潜在动机。","适合研究、整理与等待信息。","先感受，再决定。"]],
+      ["皇后","The Empress",["丰盛","滋养","吸引"],["这是滋养与生长的阶段。","关系里更适合表达关心与柔软。","创意事务更容易开花结果。","先让能量流动起来。"]],
+      ["皇帝","The Emperor",["秩序","掌控","责任"],["局面需要结构与边界。","关系里需要更成熟可靠的承担。","适合管理、搭框架、推动落地。","明确规则，明确下一步。"]],
+      ["教皇","The Hierophant",["传统","规则","学习"],["成熟经验会比临时聪明更有效。","关系可能往更正式稳定的方向走。","适合学习、考证或进入体系。","先站稳基本盘。"]],
+      ["恋人","The Lovers",["选择","关系","一致"],["重要的是价值是否一致。","适合确认彼此立场与需求。","合作和选择需要目标一致。","先问哪个更像真实的你。"]],
+      ["战车","The Chariot",["推进","意志","胜利"],["方向一旦清晰，执行力会迅速拉开差距。","关系需要主动推进。","适合冲目标、抢节奏、做突破。","把分散的能量拧成一股绳。"]],
+      ["力量","Strength",["韧性","稳定","温和"],["真正的强大来自稳定和自控。","温和处理冲突更容易建立信任。","耐心与持续性会成为优势。","先稳住自己。"]],
+      ["隐者","The Hermit",["独处","思考","寻找"],["退一步是在为判断留空间。","关系里需要独立思考与沉淀。","适合复盘、研究与深度沉淀。","把注意力收回自己。"]],
+      ["命运之轮","Wheel of Fortune",["转机","循环","变化"],["趋势正在转动。","关系进入转折期。","适合抓住外部变化的窗口。","灵活的人更容易接住运气。"]],
+      ["正义","Justice",["平衡","因果","判断"],["结果会反映你此前的选择。","关系里需要公平与诚实。","规则与结果导向事务会被放大。","先对自己诚实。"]],
+      ["倒吊人","The Hanged Man",["停顿","换位","放下"],["暂停是为了换一个视角。","关系里先别急着争对错。","项目可能需要等待与取舍。","接受暂时停住。"]],
+      ["死神","Death",["结束","蜕变","更新"],["一个阶段正在自然结束。","关系模式需要彻底改变。","适合断舍离旧项目与旧身份。","为新的东西腾位置。"]],
+      ["节制","Temperance",["调和","恢复","节奏"],["适合通过微调回到更稳的状态。","柔和沟通比强推更有用。","协作与长期推进会更好。","不要走极端。"]],
+      ["恶魔","The Devil",["执念","欲望","束缚"],["你已经看见束缚的形状。","关系里可能有依赖与控制。","短期利益可能让你偏离方向。","承认执念，是解除它的第一步。"]],
+      ["高塔","The Tower",["突变","真相","重建"],["结构性问题被击穿。","隐藏问题可能突然爆发。","旧计划或旧认知需要快速调整。","别只害怕崩塌。"]],
+      ["星星","The Star",["希望","疗愈","信心"],["希望感和修复力正在回流。","更适合慢慢建立安全感。","适合恢复信心、重启创意。","允许自己重新相信。"]],
+      ["月亮","The Moon",["迷雾","情绪","潜意识"],["局势尚未完全明朗。","感情里容易多想与误读。","项目中可能有隐藏变量。","先提升辨别力。"]],
+      ["太阳","The Sun",["明朗","活力","成功"],["能见度与积极结果都在上升。","关系适合坦率公开的互动。","适合展示成果与争取机会。","主动一点，把光打出去。"]],
+      ["审判","Judgement",["觉醒","召唤","决定"],["过去的经验正在汇聚成召唤。","旧议题会回到面前。","适合复盘后做升级决策。","不要再假装没听见。"]],
+      ["世界","The World",["完成","整合","圆满"],["一个阶段趋于完整。","关系更容易达成成熟共识。","适合收尾、交付与进入新周期。","先肯定已经完成的部分。"]]
+    ];
+
+    const suits = [
+      ["权杖","Wands","火元素",["行动","热情","驱动力"]],
+      ["圣杯","Cups","水元素",["情感","关系","直觉"]],
+      ["宝剑","Swords","风元素",["思维","判断","沟通"]],
+      ["星币","Pentacles","土元素",["现实","资源","积累"]]
+    ];
+
+    const ranks = [
+      ["一","Ace",["起点","种子","可能"]],["二","Two",["平衡","选择","互动"]],["三","Three",["扩展","合作","成长"]],
+      ["四","Four",["稳定","停留","结构"]],["五","Five",["冲突","波动","挑战"]],["六","Six",["调整","过渡","回暖"]],
+      ["七","Seven",["策略","试探","考验"]],["八","Eight",["推进","专注","强化"]],["九","Nine",["临界点","成熟","收束"]],
+      ["十","Ten",["完成","结果","阶段终点"]],["侍从","Page",["学习","消息","萌芽"]],["骑士","Knight",["行动","冲锋","执行"]],
+      ["皇后","Queen",["成熟","接纳","稳定掌控"]],["国王","King",["权威","定力","统筹"]]
+    ];
+
+    const majorGlyphs = [
+      "M110 54 L118 72 L138 74 L124 88 L128 108 L110 98 L92 108 L96 88 L82 74 L102 72 Z M110 110 Q126 146 158 164 Q126 182 110 216 Q94 182 62 164 Q94 146 110 110 Z",
+      "M74 164 H146 M92 146 L128 182 M128 146 L92 182 M88 102 A22 22 0 1 0 132 102 A22 22 0 1 0 88 102",
+      "M82 126 V202 M138 126 V202 M82 202 H138 M92 90 A18 18 0 1 0 128 90 A18 18 0 1 0 92 90",
+      "M80 94 Q110 58 140 94 Q140 134 110 162 Q80 134 80 94 Z M90 182 Q110 168 130 182",
+      "M78 78 H142 V142 H78 Z M94 174 H126 M110 142 V214",
+      "M82 82 H138 V128 H82 Z M110 128 V214 M88 168 H132",
+      "M90 96 Q90 74 110 74 Q130 74 130 96 Q130 118 110 136 Q90 118 90 96 Z M74 176 Q110 142 146 176",
+      "M72 164 H148 M110 80 L146 164 L110 248 L74 164 Z",
+      "M94 96 Q110 74 126 96 Q126 118 110 136 Q94 118 94 96 Z M86 186 Q110 154 134 186 Q134 214 110 236 Q86 214 86 186 Z",
+      "M110 66 L128 102 L110 138 L92 102 Z M110 138 V226",
+      "M66 160 H154 M110 116 V204 M66 160 A44 44 0 1 0 154 160 A44 44 0 1 0 66 160",
+      "M84 90 H136 M92 90 V214 M128 90 V214 M84 214 H136 M92 152 A18 18 0 1 0 128 152 A18 18 0 1 0 92 152",
+      "M82 82 H138 M92 82 V122 Q92 152 110 172 Q128 152 128 122 V82 M90 194 A20 20 0 1 0 130 194 A20 20 0 1 0 90 194",
+      "M110 72 L132 98 L110 124 L88 98 Z M88 164 Q110 140 132 164 Q110 206 88 164 Z",
+      "M82 104 Q110 76 138 104 Q110 132 82 160 Q110 188 138 216",
+      "M88 94 H132 V138 H88 Z M94 170 Q110 150 126 170 Q110 198 94 170 Z",
+      "M110 60 L138 124 L112 124 L142 214 M82 214 H146",
+      "M110 70 L118 90 L140 92 L122 106 L128 128 L110 116 L92 128 L98 106 L80 92 L102 90 Z M70 164 A8 8 0 1 0 86 164 A8 8 0 1 0 70 164 M132 188 A10 10 0 1 0 152 188 A10 10 0 1 0 132 188",
+      "M78 114 Q110 74 142 114 Q110 154 78 114 Z M84 196 Q110 170 136 196",
+      "M86 116 A24 24 0 1 0 134 116 A24 24 0 1 0 86 116 M110 70 V84 M110 148 V162 M64 116 H78 M142 116 H156 M82 88 L92 98 M128 134 L138 144 M128 98 L138 88 M82 144 L92 134",
+      "M110 72 V126 M90 102 H130 M78 182 Q110 148 142 182 Q110 216 78 182 Z",
+      "M54 160 A56 56 0 1 0 166 160 A56 56 0 1 0 54 160 M110 104 L146 160 L110 216 L74 160 Z"
+    ];
+
+    function buildDeck() {
+      const big = majorCards.map((c, i) => ({
+        id: i,
+        arcana: "大阿尔卡那",
+        nameZh: c[0],
+        nameEn: c[1],
+        keywords: c[2],
+        upright: { theme: c[3][0], love: c[3][1], career: c[3][2], advice: c[3][3] },
+        reversed: {
+          theme: "你可能在同一议题上感到迟疑、失衡或反复。",
+          love: "关系里的不安与误读需要被看见。",
+          career: "问题常常不是能力，而是方向与分配。",
+          advice: "先停一下，把真正重要的那一步重新看清。"
+        }
+      }));
+
+      const small = [];
+      let id = 22;
+      for (const suit of suits) {
+        for (const rank of ranks) {
+          small.push({
+            id: id++,
+            arcana: "小阿尔卡那",
+            suit: suit[0],
+            element: suit[2],
+            nameZh: suit[0] + rank[0],
+            nameEn: rank[1] + " of " + suit[1],
+            keywords: [...rank[2], suit[3][0]].slice(0, 4),
+            upright: {
+              theme: `这一轮重点被推向${suit[3].join("、")}。`,
+              love: `情感层面会更强调${suit[3][1]}与彼此是否愿意靠近。`,
+              career: `现实层面适合处理和${suit[3][0]}有关的事务。`,
+              advice: "先把真正该处理的核心部分收回来。"
+            },
+            reversed: {
+              theme: "同一议题可能因为失衡或拖延而变得更难推进。",
+              love: "关系里的误会、迟疑或投入失衡值得被正视。",
+              career: "如果现实层面反复受阻，先检查节奏和优先级。",
+              advice: "与其继续分散，不如把注意力重新归拢。"
+            }
+          });
+        }
+      }
+      return [...big, ...small];
+    }
+
+    const deck = buildDeck();
+    const state = { mode: "single", cards: [], revealed: 0, drawToken: 0, shuffling: false };
+
+    const $ = (id) => document.getElementById(id);
+    const question = $("question");
+    const cardsBox = $("cards");
+    const summary = $("summary");
+    const count = $("count");
+    const questionBox = $("questionBox");
+    const msg = $("msg");
+    const modeBtns = [...document.querySelectorAll(".mode")];
+
+    const drawCount = () => state.mode === "single" ? 1 : 3;
+    const positions = () => labels[state.mode];
+    const orientation = (card) => card.reversedFlag ? "逆位" : "正位";
+    const meaning = (card) => card.reversedFlag ? card.reversed : card.upright;
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function glyphMajor(index) {
+      return `<svg class="glyph" viewBox="0 0 220 320" aria-hidden="true"><path d="${majorGlyphs[index]}" fill="none" stroke="url(#g${index})" stroke-width="1.25"/><defs><linearGradient id="g${index}" x1="0%" x2="100%" y1="0%" y2="100%"><stop offset="0%" stop-color="#ffe6bd" stop-opacity=".82"/><stop offset="100%" stop-color="#bb8848" stop-opacity=".24"/></linearGradient></defs></svg>`;
+    }
+
+    function glyphMinor(card) {
+      let d = "";
+      if (card.suit === "权杖") d = "M110 54 L122 86 L110 118 L98 86 Z M110 110 L118 206 M86 136 Q110 120 134 136 M92 164 Q110 150 128 164";
+      else if (card.suit === "圣杯") d = "M74 96 H146 Q142 146 124 164 H96 Q78 146 74 96 Z M110 164 L110 196 M92 196 H128 M84 210 H136";
+      else if (card.suit === "宝剑") d = "M110 54 L124 92 L110 228 L96 92 Z M84 106 H136 M94 78 L126 78 M100 228 H120";
+      else d = "M110 62 L148 90 L134 136 L86 136 L72 90 Z M110 136 L110 204 M92 204 H128 M84 218 H136";
+      return `<svg class="glyph" viewBox="0 0 220 320" aria-hidden="true"><path d="${d}" fill="none" stroke="url(#gm)" stroke-width="1.35"/><defs><linearGradient id="gm" x1="0%" x2="100%" y1="0%" y2="100%"><stop offset="0%" stop-color="#ffe6bd" stop-opacity=".82"/><stop offset="100%" stop-color="#bb8848" stop-opacity=".24"/></linearGradient></defs></svg>`;
+    }
+
+    function frontOrnament(i) {
+      return `<svg class="front-ornament" viewBox="0 0 220 320" aria-hidden="true"><defs><linearGradient id="f${i}" x1="0%" x2="100%" y1="0%" y2="100%"><stop offset="0%" stop-color="#ffe4ba" stop-opacity=".62"/><stop offset="100%" stop-color="#d1a96f" stop-opacity=".16"/></linearGradient></defs><rect x="14" y="14" width="192" height="292" rx="22" fill="none" stroke="url(#f${i})" stroke-width="1.1"/><path d="M110 42 C124 60 142 74 166 84 C142 94 124 108 110 126 C96 108 78 94 54 84 C78 74 96 60 110 42 Z" fill="none" stroke="url(#f${i})" stroke-width="1"/><path d="M110 278 C124 260 142 246 166 236 C142 226 124 212 110 194 C96 212 78 226 54 236 C78 246 96 260 110 278 Z" fill="none" stroke="url(#f${i})" stroke-width="1"/><circle cx="110" cy="160" r="42" fill="none" stroke="url(#f${i})" stroke-width="1.2"/><circle cx="110" cy="160" r="22" fill="none" stroke="url(#f${i})" stroke-width="1"/></svg>`;
+    }
+
+    function summaryText() {
+      const head = question.value.trim() ? `问题：${question.value.trim()}` : "问题：此刻需要知道什么";
+      return [head, ...state.cards.map((card, i) => `${positions()[i]}｜${card.nameZh}${orientation(card)}：${meaning(card).advice}`)].join("\n");
+    }
+
+    function cardHTML(card, i) {
+      const m = meaning(card);
+      const tags = [...(card.suit ? [card.suit, card.element] : []), ...card.keywords, orientation(card)]
+        .map((t) => `<span class="tag">${t}</span>`).join("");
+      return `<div class="card">
+        <div class="stage ${state.shuffling ? "shuffling" : ""} ${i < state.revealed ? "revealed" : ""}">
+          <div class="card-back">
+            <div class="back-stars">✦ ✦ ✦</div>
+            <div class="back-title">TAROT</div>
+            <div class="back-subtitle">${positions()[i]}</div>
+          </div>
+          <div class="card-front">
+            <div class="face ${card.reversedFlag ? "reversed" : ""}">
+              ${frontOrnament(i)}
+              <div class="arcana">${card.arcana}</div>
+              ${card.id < 22 ? glyphMajor(card.id) : glyphMinor(card)}
+              <div class="name">${card.nameZh}</div>
+              <div class="name-en">${card.nameEn}</div>
+              ${card.suit ? `<div class="minor">${card.suit} · ${card.element}</div>` : ""}
+            </div>
+          </div>
+        </div>
+        <div class="reading ${i < state.revealed ? "" : "hidden"}">
+          <span class="reading-title">${positions()[i]}</span>
+          <div class="tags">${tags}</div>
+          <div class="meaning-list">
+            <div class="meaning"><strong>主题</strong><p>${m.theme}</p></div>
+            <div class="meaning"><strong>情感</strong><p>${m.love}</p></div>
+            <div class="meaning"><strong>现实</strong><p>${m.career}</p></div>
+            <div class="meaning"><strong>指引</strong><p>${m.advice}</p></div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function render() {
+      cardsBox.innerHTML = state.cards.map(cardHTML).join("");
+      count.textContent = state.cards.length === 1 ? "1 张牌" : "3 张牌";
+      questionBox.textContent = question.value.trim() || "此刻，什么最值得被看见？";
+      summary.textContent = summaryText();
+    }
+
+    function draw() {
+      state.drawToken += 1;
+      const token = state.drawToken;
+      state.cards = shuffle(deck).slice(0, drawCount()).map((c) => ({ ...c, reversedFlag: Math.random() > 0.5 }));
+      state.revealed = 0;
+      state.shuffling = true;
+      render();
+      setTimeout(() => {
+        if (token !== state.drawToken) return;
+        state.shuffling = false;
+        render();
+        state.cards.forEach((_, i) => {
+          setTimeout(() => {
+            if (token !== state.drawToken) return;
+            state.revealed = i + 1;
+            render();
+          }, 180 + i * 520);
+        });
+      }, 520);
+    }
+
+    function escapeXml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function wrapText(text, max) {
+      const lines = [];
+      let current = "";
+      for (const ch of text) {
+        current += ch;
+        if (current.length >= max || ch === "\n") {
+          lines.push(current.replace(/\n/g, ""));
+          current = "";
+        }
+      }
+      if (current) lines.push(current);
+      return lines;
+    }
+
+    function posterGlyphMarkup(card, cx, cy) {
+      const stroke = "rgba(240,212,162,.85)";
+      if (card.id < 22) {
+        return `<path d="${majorGlyphs[card.id]}" transform="translate(${cx - 110} ${cy - 160})" fill="none" stroke="${stroke}" stroke-width="1.25"/>`;
+      }
+      let d = "";
+      if (card.suit === "权杖") d = "M110 54 L122 86 L110 118 L98 86 Z M110 110 L118 206 M86 136 Q110 120 134 136 M92 164 Q110 150 128 164";
+      else if (card.suit === "圣杯") d = "M74 96 H146 Q142 146 124 164 H96 Q78 146 74 96 Z M110 164 L110 196 M92 196 H128 M84 210 H136";
+      else if (card.suit === "宝剑") d = "M110 54 L124 92 L110 228 L96 92 Z M84 106 H136 M94 78 L126 78 M100 228 H120";
+      else d = "M110 62 L148 90 L134 136 L86 136 L72 90 Z M110 136 L110 204 M92 204 H128 M84 218 H136";
+      return `<path d="${d}" transform="translate(${cx - 110} ${cy - 160})" fill="none" stroke="${stroke}" stroke-width="1.35"/>`;
+    }
+
+    function buildPosterSvg() {
+      const title = question.value.trim() || "此刻，什么最值得被看见？";
+      const blocks = ["留给此刻的话", "", ...summaryText().split("\n")];
+      const lines = blocks.flatMap((line) => wrapText(line, 18));
+      const lineHeight = 28;
+      const cardAreaWidth = state.cards.length === 1 ? 220 : state.cards.length === 2 ? 420 : 620;
+      const cardStartX = (720 - cardAreaWidth) / 2;
+      const cardGap = state.cards.length === 1 ? 0 : 20;
+      const cardWidth = state.cards.length === 1 ? 220 : state.cards.length === 2 ? 200 : 193.3333;
+      const cardHeight = 220;
+      const textStartY = 562;
+      const height = Math.max(980, textStartY + lines.length * lineHeight + 80);
+      const textSvg = lines.map((line, i) => `<text x="56" y="${textStartY + i * lineHeight}" fill="${i === 0 ? "#f0d4a2" : "#f3e6d8"}" font-size="${i === 0 ? 26 : 18}" font-family="Georgia, PingFang SC, Microsoft YaHei, serif">${escapeXml(line)}</text>`).join("");
+
+      const cardPanels = state.cards.map((card, i) => {
+        const x = cardStartX + i * (cardWidth + cardGap);
+        const label = positions()[i] + " · " + orientation(card);
+        return `
+          <g>
+            <rect x="${x}" y="160" width="${cardWidth}" height="${cardHeight}" rx="24" fill="rgba(255,248,236,.05)" stroke="rgba(212,174,116,.18)"/>
+            <rect x="${x + 10}" y="170" width="${cardWidth - 20}" height="${cardHeight - 20}" rx="18" fill="rgba(111,71,38,.88)" stroke="rgba(255,236,203,.26)"/>
+            <path d="M${x + cardWidth / 2} 192 C${x + cardWidth / 2 + 12} 204 ${x + cardWidth / 2 + 26} 214 ${x + cardWidth / 2 + 48} 222 C${x + cardWidth / 2 + 26} 230 ${x + cardWidth / 2 + 12} 242 ${x + cardWidth / 2} 256 C${x + cardWidth / 2 - 12} 242 ${x + cardWidth / 2 - 26} 230 ${x + cardWidth / 2 - 48} 222 C${x + cardWidth / 2 - 26} 214 ${x + cardWidth / 2 - 12} 204 ${x + cardWidth / 2} 192 Z" fill="none" stroke="rgba(255,236,203,.24)" stroke-width="1"/>
+            <circle cx="${x + cardWidth / 2}" cy="270" r="34" fill="none" stroke="rgba(255,236,203,.18)" stroke-width="1"/>
+            <circle cx="${x + cardWidth / 2}" cy="270" r="16" fill="none" stroke="rgba(255,236,203,.16)" stroke-width="1"/>
+            <text x="${x + cardWidth / 2}" y="194" text-anchor="middle" fill="#f0d4a2" font-size="11" letter-spacing="3" font-family="Georgia, PingFang SC, Microsoft YaHei, serif">${escapeXml(card.arcana)}</text>
+            ${posterGlyphMarkup(card, x + cardWidth / 2, 250)}
+            <text x="${x + cardWidth / 2}" y="314" text-anchor="middle" fill="#fff4e7" font-size="22" font-family="Georgia, PingFang SC, Microsoft YaHei, serif">${escapeXml(card.nameZh)}</text>
+            <text x="${x + cardWidth / 2}" y="336" text-anchor="middle" fill="rgba(243,230,216,.8)" font-size="11" font-family="Georgia, PingFang SC, Microsoft YaHei, serif">${escapeXml(card.nameEn)}</text>
+            <text x="${x + cardWidth / 2}" y="364" text-anchor="middle" fill="#f0d4a2" font-size="12" letter-spacing="2" font-family="Georgia, PingFang SC, Microsoft YaHei, serif">${escapeXml(label)}</text>
+          </g>`;
+      }).join("");
+
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="${height}" viewBox="0 0 720 ${height}">
+        <defs>
+          <linearGradient id="bg" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#22171b"/>
+            <stop offset="100%" stop-color="#110c0e"/>
+          </linearGradient>
+          <radialGradient id="glow" cx="50%" cy="0%" r="55%">
+            <stop offset="0%" stop-color="#d7b27b" stop-opacity=".22"/>
+            <stop offset="100%" stop-color="#d7b27b" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect width="720" height="${height}" fill="url(#bg)"/>
+        <rect width="720" height="${height}" fill="url(#glow)"/>
+        <rect x="28" y="28" width="664" height="${height - 56}" rx="28" fill="rgba(42,29,31,.92)" stroke="rgba(212,174,116,.24)"/>
+        <text x="56" y="86" fill="#f0d4a2" font-size="14" letter-spacing="4" font-family="Georgia, PingFang SC, Microsoft YaHei, serif">TAROT READING</text>
+        <text x="56" y="132" fill="#f3e6d8" font-size="38" font-family="Georgia, PingFang SC, Microsoft YaHei, serif">塔罗灵感</text>
+        <rect x="56" y="156" width="608" height="54" rx="18" fill="rgba(255,248,236,.06)" stroke="rgba(212,174,116,.14)"/>
+        <text x="78" y="190" fill="#f3e6d8" font-size="22" font-family="Georgia, PingFang SC, Microsoft YaHei, serif">${escapeXml(title)}</text>
+        ${cardPanels}
+        ${textSvg}
+      </svg>`;
+    }
+
+    function savePosterSvg() {
+      const svg = buildPosterSvg();
+      const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "tarot-poster.svg";
+      a.click();
+      URL.revokeObjectURL(url);
+      msg.textContent = "SVG 海报已生成并开始下载。";
+    }
+
+    function savePosterPng() {
+      const svg = buildPosterSvg();
+      const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 720 * 2;
+        canvas.height = img.height * 2;
+        const ctx = canvas.getContext("2d");
+        ctx.scale(2, 2);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        const a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        a.download = "tarot-poster.png";
+        a.click();
+        msg.textContent = "PNG 海报已生成并开始下载。";
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        msg.textContent = "PNG 海报生成失败，请改用 SVG 海报。";
+      };
+      img.src = url;
+    }
+
+    $("draw").onclick = draw;
+    $("reset").onclick = () => {
+      question.value = "";
+      state.mode = "single";
+      modeBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.mode === "single"));
+      draw();
+    };
+    $("copy").onclick = () => {
+      const text = summaryText();
+      (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(text) : Promise.reject())
+        .then(() => { msg.textContent = "启示已经收拢成句，可以直接送往对话里。"; })
+        .catch(() => { msg.textContent = "当前环境不支持自动复制，请手动复制这段话。"; });
+    };
+    $("posterSvg").onclick = savePosterSvg;
+    $("posterPng").onclick = savePosterPng;
+    $("save").onclick = () => { msg.textContent = "这个 html 文件本身就是单文件完整版，直接把它发给别人即可。"; };
+
+    modeBtns.forEach((btn) => {
+      btn.onclick = () => {
+        state.mode = btn.dataset.mode;
+        modeBtns.forEach((b) => b.classList.toggle("active", b === btn));
+        draw();
+      };
+    });
+
+    draw();
+  </script>
+</body>
+</html>
