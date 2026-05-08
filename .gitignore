@@ -1,0 +1,9 @@
+node_modules/
+dist/
+
+.npm-cache/
+.pnpm-home/
+.pnpm-store/
+
+*.log
+.DS_Store
